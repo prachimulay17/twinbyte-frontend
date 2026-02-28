@@ -46,9 +46,8 @@ const InputPanel = ({ onAnalyze, isAnalyzing }: InputPanelProps) => {
           onChange={(e) => setContent(e.target.value)}
           placeholder={t("dashboard.placeholder")}
           rows={isSimpleMode ? 6 : 5}
-          className={`w-full resize-none rounded-2xl glass px-4 py-3.5 text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-accent/60 focus:ring-2 focus:ring-accent/20 focus:glow-accent ${
-            isSimpleMode ? "text-lg" : "text-sm"
-          }`}
+          className={`w-full resize-none rounded-2xl glass px-4 py-3.5 text-foreground placeholder:text-muted-foreground outline-none transition-all focus:border-accent/60 focus:ring-2 focus:ring-accent/20 focus:glow-accent ${isSimpleMode ? "text-lg" : "text-sm"
+            }`}
         />
       </div>
 
@@ -60,11 +59,10 @@ const InputPanel = ({ onAnalyze, isAnalyzing }: InputPanelProps) => {
             whileHover={{ scale: 1.03, y: -2 }}
             whileTap={{ scale: 0.97 }}
             onClick={() => handleUpload(type)}
-            className={`flex items-center justify-center gap-2 rounded-2xl glass px-3 transition-all ${
-              uploadedFile?.startsWith(type)
+            className={`flex items-center justify-center gap-2 rounded-2xl glass px-3 transition-all ${uploadedFile?.startsWith(type)
                 ? "border-accent/50 bg-accent/10 text-accent glow-accent"
                 : "text-muted-foreground hover:text-foreground hover:border-accent/30"
-            } ${isSimpleMode ? "text-base py-3.5" : "text-sm py-3"}`}
+              } ${isSimpleMode ? "text-base py-3.5" : "text-sm py-3"}`}
           >
             <Icon className="h-4 w-4" />
             {label}
@@ -100,9 +98,8 @@ const InputPanel = ({ onAnalyze, isAnalyzing }: InputPanelProps) => {
         whileTap={{ scale: 0.97 }}
         onClick={handleSubmit}
         disabled={isAnalyzing || (!content.trim() && !uploadedFile)}
-        className={`relative flex items-center justify-center gap-2.5 overflow-hidden rounded-2xl bg-gradient-to-r from-primary to-primary/80 px-6 font-display font-semibold text-primary-foreground transition-all disabled:opacity-40 disabled:cursor-not-allowed glow-primary ${
-          isSimpleMode ? "py-4.5 text-lg" : "py-3.5 text-sm"
-        }`}
+        className={`relative flex items-center justify-center gap-2.5 overflow-hidden rounded-2xl bg-primary px-6 font-display font-semibold text-primary-foreground transition-all disabled:opacity-40 disabled:cursor-not-allowed glow-primary ${isSimpleMode ? "py-4.5 text-lg" : "py-3.5 text-sm"
+          }`}
       >
         {isAnalyzing ? (
           <>

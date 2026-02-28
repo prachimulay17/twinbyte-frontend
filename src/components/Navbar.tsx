@@ -22,11 +22,38 @@ const Navbar = () => {
           <motion.div
             whileHover={{ scale: 1.1, rotate: 5 }}
             whileTap={{ scale: 0.95 }}
-            className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-accent glow-primary"
+            className="flex h-10 w-10 items-center justify-center rounded-xl glow-primary"
+            style={{ background: "linear-gradient(135deg, hsl(230,60%,32%) 0%, hsl(230,60%,22%) 100%)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12)" }}
           >
-            <Shield className="h-5 w-5 text-primary-foreground" />
+            <svg viewBox="0 0 20 22" width="20" height="22" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              {/* Shield outline */}
+              <path
+                d="M10 1.5 L18 4.5 L18 11 C18 15.5 14.5 19.2 10 20.5 C5.5 19.2 2 15.5 2 11 L2 4.5 Z"
+                fill="rgba(255,255,255,0.08)"
+                stroke="rgba(255,255,255,0.9)"
+                strokeWidth="1.25"
+                strokeLinejoin="round"
+              />
+              {/* Inner highlight arc */}
+              <path
+                d="M6 6 Q10 4.5 14 6"
+                stroke="rgba(255,255,255,0.25)"
+                strokeWidth="0.75"
+                fill="none"
+                strokeLinecap="round"
+              />
+              {/* Checkmark */}
+              <polyline
+                points="7,11 9,13.2 13.5,8.5"
+                stroke="rgba(255,255,255,0.95)"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                fill="none"
+              />
+            </svg>
           </motion.div>
-          <span className="font-display text-lg font-bold gradient-text">
+          <span className="font-display text-lg font-bold gradient-text logo-text">
             SatyaDrishti
           </span>
         </Link>
@@ -40,9 +67,8 @@ const Navbar = () => {
             <Link
               key={to}
               to={to}
-              className={`relative rounded-lg px-4 py-2 text-sm font-medium transition-all hover:text-accent ${
-                location.pathname === to ? "text-accent" : "text-muted-foreground"
-              }`}
+              className={`relative rounded-lg px-4 py-2 text-sm font-medium transition-all hover:text-accent ${location.pathname === to ? "text-accent" : "text-muted-foreground"
+                }`}
             >
               {label}
               {location.pathname === to && (
@@ -63,11 +89,10 @@ const Navbar = () => {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={toggleSimpleMode}
-            className={`flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-medium transition-all ${
-              isSimpleMode
-                ? "bg-accent/20 text-accent glow-accent"
-                : "glass text-muted-foreground hover:text-foreground"
-            }`}
+            className={`flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-medium transition-all ${isSimpleMode
+              ? "bg-accent/20 text-accent glow-accent"
+              : "glass text-muted-foreground hover:text-foreground"
+              }`}
             title={t("nav.simpleMode")}
           >
             <Eye className="h-3.5 w-3.5" />

@@ -64,11 +64,10 @@ const ResultPanel = ({ result }: ResultPanelProps) => {
       {/* Decision Block */}
       <motion.div
         variants={item}
-        className={`relative overflow-hidden rounded-2xl border-2 p-5 ${
-          isHighRisk
+        className={`relative overflow-hidden rounded-2xl border-2 p-5 ${isHighRisk
             ? "border-destructive/40 bg-destructive/5 glow-destructive"
             : "border-success/40 bg-success/5 glow-success"
-        }`}
+          }`}
       >
         <div className="absolute inset-0 bg-gradient-to-br from-transparent to-background/20" />
         <div className="relative">
@@ -186,7 +185,7 @@ const ResultPanel = ({ result }: ResultPanelProps) => {
             href={result.verifiedLink}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-primary to-primary/80 px-5 py-2.5 text-sm font-medium text-primary-foreground transition-all glow-primary"
+            className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground transition-all glow-primary"
           >
             <ExternalLink className="h-4 w-4" />
             {t("result.openSource")}
@@ -205,9 +204,8 @@ const ResultPanel = ({ result }: ResultPanelProps) => {
         whileTap={{ scale: 0.98 }}
         onClick={handleTTS}
         disabled={isPlaying}
-        className={`flex items-center justify-center gap-2 rounded-2xl glass px-5 py-3.5 font-medium text-foreground transition-all hover:border-accent/50 disabled:opacity-50 ${
-          isPlaying ? "glow-accent" : ""
-        }`}
+        className={`flex items-center justify-center gap-2 rounded-2xl glass px-5 py-3.5 font-medium text-foreground transition-all hover:border-accent/50 disabled:opacity-50 ${isPlaying ? "glow-accent" : ""
+          }`}
       >
         <Volume2 className={`h-4 w-4 ${isPlaying ? "animate-pulse-glow text-accent" : ""}`} />
         <span className={isSimpleMode ? "text-base" : "text-sm"}>
