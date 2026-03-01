@@ -1,25 +1,45 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { Image, Video, AudioLines, Mic, Search, Sparkles } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
 
 interface InputPanelProps {
-  onAnalyze: (content: string) => void;
+  onAnalyze: (formData: FormData) => void;
   isAnalyzing: boolean;
 }
 
 const InputPanel = ({ onAnalyze, isAnalyzing }: InputPanelProps) => {
   const { t, isSimpleMode } = useApp();
   const [content, setContent] = useState("");
-  const [uploadedFile, setUploadedFile] = useState<string | null>(null);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleUpload = (type: string) => {
-    setUploadedFile(`${type}_sample.${type === "image" ? "jpg" : type === "video" ? "mp4" : "mp3"}`);
+  const handleUploadClick = (type: string) => {
+    if (type === "image" && fileInputRef.current) {
+      fileInputRef.current.click();
+    } else {
+      // Fallback or placeholder for other types if needed, 
+      // but backend currently only supports image specifically for file uploads
+      alert(`Upload for ${type} is not supported in this demo yet.`);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setUploadedFile(e.target.files[0]);
+    }
   };
 
   const handleSubmit = () => {
     if (content.trim() || uploadedFile) {
-      onAnalyze(content || uploadedFile || "");
+      const formData = new FormData();
+      if (content.trim()) {
+        formData.append("text", content.trim());
+      }
+      if (uploadedFile) {
+        formData.append("image", uploadedFile);
+      }
+      onAnalyze(formData);
     }
   };
 
@@ -51,17 +71,27 @@ const InputPanel = ({ onAnalyze, isAnalyzing }: InputPanelProps) => {
         />
       </div>
 
+      {/* Hidden File Input */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        accept="image/jpeg, image/png, image/webp"
+        style={{ display: "none" }}
+      />
+
       {/* Upload Buttons */}
       <div className="grid grid-cols-2 gap-2.5">
         {uploadButtons.map(({ icon: Icon, label, type }) => (
           <motion.button
             key={type}
+            type="button"
             whileHover={{ scale: 1.03, y: -2 }}
             whileTap={{ scale: 0.97 }}
-            onClick={() => handleUpload(type)}
-            className={`flex items-center justify-center gap-2 rounded-2xl glass px-3 transition-all ${uploadedFile?.startsWith(type)
-                ? "border-accent/50 bg-accent/10 text-accent glow-accent"
-                : "text-muted-foreground hover:text-foreground hover:border-accent/30"
+            onClick={() => handleUploadClick(type)}
+            className={`flex items-center justify-center gap-2 rounded-2xl glass px-3 transition-all ${uploadedFile && type === "image"
+              ? "border-accent/50 bg-accent/10 text-accent glow-accent"
+              : "text-muted-foreground hover:text-foreground hover:border-accent/30"
               } ${isSimpleMode ? "text-base py-3.5" : "text-sm py-3"}`}
           >
             <Icon className="h-4 w-4" />
@@ -74,9 +104,9 @@ const InputPanel = ({ onAnalyze, isAnalyzing }: InputPanelProps) => {
         <motion.p
           initial={{ opacity: 0, y: -5 }}
           animate={{ opacity: 1, y: 0 }}
-          className="text-xs text-accent font-medium"
+          className="text-xs text-accent font-medium truncate"
         >
-          📎 {uploadedFile}
+          📎 {uploadedFile.name}
         </motion.p>
       )}
 
@@ -94,9 +124,14 @@ const InputPanel = ({ onAnalyze, isAnalyzing }: InputPanelProps) => {
 
       {/* Analyze Button */}
       <motion.button
+        type="button"
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.97 }}
-        onClick={handleSubmit}
+        onClick={(e) => {
+          e.preventDefault();
+          console.log("Verify Button Clicked! Content length:", content.length, "File:", uploadedFile?.name);
+          handleSubmit();
+        }}
         disabled={isAnalyzing || (!content.trim() && !uploadedFile)}
         className={`relative flex items-center justify-center gap-2.5 overflow-hidden rounded-2xl bg-primary px-6 font-display font-semibold text-primary-foreground transition-all disabled:opacity-40 disabled:cursor-not-allowed glow-primary ${isSimpleMode ? "py-4.5 text-lg" : "py-3.5 text-sm"
           }`}
@@ -118,3 +153,4 @@ const InputPanel = ({ onAnalyze, isAnalyzing }: InputPanelProps) => {
 };
 
 export default InputPanel;
+
