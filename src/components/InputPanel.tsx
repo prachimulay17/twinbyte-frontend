@@ -11,6 +11,7 @@ interface InputPanelProps {
 const InputPanel = ({ onAnalyze, isAnalyzing }: InputPanelProps) => {
   const { t, isSimpleMode } = useApp();
   const [content, setContent] = useState("");
+  const [language, setLanguage] = useState("English");
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -39,6 +40,10 @@ const InputPanel = ({ onAnalyze, isAnalyzing }: InputPanelProps) => {
       if (uploadedFile) {
         formData.append("image", uploadedFile);
       }
+
+      // Pass the selected UI language to the backend for the AI payload
+      formData.append("language", language);
+
       onAnalyze(formData);
     }
   };
@@ -115,10 +120,14 @@ const InputPanel = ({ onAnalyze, isAnalyzing }: InputPanelProps) => {
         <label className={`mb-2 block font-medium text-foreground ${isSimpleMode ? "text-base" : "text-sm"}`}>
           {t("dashboard.language")}
         </label>
-        <select className="w-full rounded-2xl glass px-4 py-3 text-sm text-foreground outline-none transition-all focus:border-accent/60 cursor-pointer">
-          <option value="en" className="bg-card">English</option>
-          <option value="hi" className="bg-card">हिंदी</option>
-          <option value="mr" className="bg-card">मराठी</option>
+        <select
+          value={language}
+          onChange={(e) => setLanguage(e.target.value)}
+          className="w-full rounded-2xl glass px-4 py-3 text-sm text-foreground outline-none transition-all focus:border-accent/60 cursor-pointer"
+        >
+          <option value="English" className="bg-card">English</option>
+          <option value="Hindi" className="bg-card">हिंदी</option>
+          <option value="Marathi" className="bg-card">मराठी</option>
         </select>
       </div>
 

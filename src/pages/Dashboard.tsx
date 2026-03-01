@@ -84,7 +84,7 @@ const Dashboard = () => {
         classification,
         riskScore: score,
         confidence: data.confidence,
-        explanation: [data.aiResult],
+        explanation: [data.explanation],
         verifiedLink: null,
       };
 
