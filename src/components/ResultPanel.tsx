@@ -1,8 +1,9 @@
 import { motion } from "framer-motion";
 import { AlertTriangle, ExternalLink, Volume2, CheckCircle2, XCircle } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AnalysisResult } from "@/data/mockResults";
 import { useApp } from "@/contexts/AppContext";
+import { speakText, cancelSpeech } from "@/utils/speakText";
 import RiskRing from "@/components/RiskRing";
 import {
   Accordion,
@@ -25,7 +26,7 @@ const item = {
 };
 
 const ResultPanel = ({ result }: ResultPanelProps) => {
-  const { t, isSimpleMode } = useApp();
+  const { t, isSimpleMode, language } = useApp();
   const [isPlaying, setIsPlaying] = useState(false);
   const isHighRisk = result.riskScore > 60;
 
@@ -46,9 +47,18 @@ const ResultPanel = ({ result }: ResultPanelProps) => {
   };
 
   const handleTTS = () => {
+    const textToSpeak = result.explanation.join(". ");
+    if (!textToSpeak) return;
+
     setIsPlaying(true);
-    setTimeout(() => setIsPlaying(false), 3000);
+    speakText(textToSpeak, language)
+      .finally(() => setIsPlaying(false));
   };
+
+  // Cancel speech if component unmounts mid-playback
+  useEffect(() => {
+    return () => cancelSpeech();
+  }, []);
 
   return (
     <motion.div
@@ -65,8 +75,8 @@ const ResultPanel = ({ result }: ResultPanelProps) => {
       <motion.div
         variants={item}
         className={`relative overflow-hidden rounded-2xl border-2 p-5 ${isHighRisk
-            ? "border-destructive/40 bg-destructive/5 glow-destructive"
-            : "border-success/40 bg-success/5 glow-success"
+          ? "border-destructive/40 bg-destructive/5 glow-destructive"
+          : "border-success/40 bg-success/5 glow-success"
           }`}
       >
         <div className="absolute inset-0 bg-gradient-to-br from-transparent to-background/20" />

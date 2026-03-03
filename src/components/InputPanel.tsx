@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Image, Video, AudioLines, Mic, Search, Sparkles } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
@@ -13,14 +13,128 @@ const InputPanel = ({ onAnalyze, isAnalyzing }: InputPanelProps) => {
   const [content, setContent] = useState("");
   const [language, setLanguage] = useState("English");
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [isListening, setIsListening] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
+
+  // ── Language → BCP-47 recognition code mapping ─────────────────
+  const getLangCode = (lang: string): string => {
+    switch (lang) {
+      case "Hindi": return "hi-IN";
+      case "Marathi": return "mr-IN";
+      default: return "en-IN";
+    }
+  };
+
+  // ── Speech Recognition (Web Speech API) ──────────────────────────
+  // Ref to hold the "base" transcript captured before interim results start
+  const baseTranscriptRef = useRef("");
+
+  const startListening = useCallback(() => {
+    const SpeechRecognition =
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      alert("Speech Recognition is not supported in your browser. Please use Chrome or Edge.");
+      return;
+    }
+
+    // If already listening, stop cleanly and bail out
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      recognitionRef.current = null;
+      setIsListening(false);
+      return;
+    }
+
+    const langCode = getLangCode(language);
+    const recognition = new SpeechRecognition();
+    recognition.lang = langCode;
+    recognition.interimResults = true;   // live preview for better Hindi/Marathi accuracy
+    recognition.maxAlternatives = 1;
+    recognition.continuous = false;
+
+    // Snapshot current textarea so we can append to it
+    baseTranscriptRef.current = content;
+
+    recognition.onstart = () => {
+      console.log(`🎙 Recognition started — lang: ${langCode}`);
+      setIsListening(true);
+    };
+
+    recognition.onresult = (event: any) => {
+      let interimTranscript = "";
+      let finalTranscript = "";
+
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const text = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          finalTranscript += text;
+        } else {
+          interimTranscript += text;
+        }
+      }
+
+      // While speaking, show live interim text; once final, commit it
+      const liveText = finalTranscript || interimTranscript;
+      if (liveText) {
+        const base = baseTranscriptRef.current;
+        setContent(base ? `${base} ${liveText}` : liveText);
+      }
+
+      if (finalTranscript) {
+        console.log("🎙 Final transcript:", finalTranscript);
+        // Update the base so subsequent recordings append correctly
+        baseTranscriptRef.current = baseTranscriptRef.current
+          ? `${baseTranscriptRef.current} ${finalTranscript}`
+          : finalTranscript;
+      }
+    };
+
+    recognition.onerror = (event: any) => {
+      console.error("🎙 Speech recognition error:", event.error);
+      switch (event.error) {
+        case "not-allowed":
+          alert("Microphone access was denied. Please allow microphone permissions.");
+          break;
+        case "no-speech":
+          alert("No speech was detected. Please try again and speak clearly.");
+          break;
+        case "audio-capture":
+          alert("No microphone found. Please connect a microphone and try again.");
+          break;
+        case "network":
+          alert("Network error — speech recognition requires an internet connection.");
+          break;
+        default:
+          console.warn("🎙 Unhandled speech error:", event.error);
+      }
+    };
+
+    recognition.onend = () => {
+      console.log("🎙 Speech recognition ended");
+      setIsListening(false);
+      recognitionRef.current = null;
+    };
+
+    recognitionRef.current = recognition;
+    try {
+      recognition.start();
+      console.log(`🎙 Recognition .start() called — lang: ${langCode}`);
+    } catch (err) {
+      console.error("🎙 Failed to start recognition:", err);
+      setIsListening(false);
+      recognitionRef.current = null;
+    }
+  }, [language, content]);
 
   const handleUploadClick = (type: string) => {
-    if (type === "image" && fileInputRef.current) {
+    if (type === "voice") {
+      startListening();
+    } else if (type === "image" && fileInputRef.current) {
       fileInputRef.current.click();
     } else {
-      // Fallback or placeholder for other types if needed, 
-      // but backend currently only supports image specifically for file uploads
       alert(`Upload for ${type} is not supported in this demo yet.`);
     }
   };
@@ -52,7 +166,7 @@ const InputPanel = ({ onAnalyze, isAnalyzing }: InputPanelProps) => {
     { icon: Image, label: t("dashboard.upload.image"), type: "image" },
     { icon: Video, label: t("dashboard.upload.video"), type: "video" },
     { icon: AudioLines, label: t("dashboard.upload.audio"), type: "audio" },
-    { icon: Mic, label: t("dashboard.upload.voice"), type: "voice" },
+    { icon: Mic, label: isListening ? "🎙 Listening..." : t("dashboard.upload.voice"), type: "voice" },
   ];
 
   return (
@@ -96,7 +210,9 @@ const InputPanel = ({ onAnalyze, isAnalyzing }: InputPanelProps) => {
             onClick={() => handleUploadClick(type)}
             className={`flex items-center justify-center gap-2 rounded-2xl glass px-3 transition-all ${uploadedFile && type === "image"
               ? "border-accent/50 bg-accent/10 text-accent glow-accent"
-              : "text-muted-foreground hover:text-foreground hover:border-accent/30"
+              : isListening && type === "voice"
+                ? "border-accent/50 bg-accent/10 text-accent glow-accent"
+                : "text-muted-foreground hover:text-foreground hover:border-accent/30"
               } ${isSimpleMode ? "text-base py-3.5" : "text-sm py-3"}`}
           >
             <Icon className="h-4 w-4" />
